@@ -3,33 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Currículo Interativo - Felipe Izui</title>
+    <title>Portfólio Interativo - Felipe Izui</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals & Muted Teal -->
-    <!-- Application Structure Plan: A single-page application with a fixed top navigation bar for quick access to key sections: Sobre, Experiência, Habilidades, e Educação/Contato. The structure is designed for a recruiter's workflow, starting with a high-level summary, moving to an interactive timeline for detailed experience, then to a visual breakdown of skills, and finally education and contact details. This non-linear but guided flow is more engaging than a static document and allows users to quickly find the information most relevant to them. -->
-    <!-- Visualization & Content Choices: 
-        - Resumo (Summary) -> Goal: Inform -> Method: Clean text block -> Justification: Provides an immediate, concise professional overview.
-        - Experiência (Experience) -> Goal: Organize/Change -> Method: Interactive vertical timeline using HTML/CSS/JS -> Interaction: Clicking a job title reveals its detailed responsibilities. -> Justification: A timeline is a visually compelling and intuitive way to represent chronological work history, making it easier to follow career progression than a simple list. Highlighting a key quantitative achievement per role draws attention to impact.
-        - Habilidades (Skills) -> Goal: Compare/Inform -> Method: Horizontal bar chart (Chart.js/Canvas) -> Interaction: Hover tooltips provide context. -> Justification: A chart provides a quick, scannable overview of technical proficiency, which is more effective for comparison than a text list.
-        - Certificações (Certifications) -> Goal: Organize -> Method: Tag-based filterable list (HTML/CSS/JS) -> Interaction: Users can click tags (e.g., 'Udemy', 'Power BI') to filter the list. -> Justification: Manages the long list of certifications, allowing users to focus on credentials from specific areas or providers.
-        - Gerar Carta de Apresentação (Generate Cover Letter) -> Goal: Create/Assist -> Method: Modal with text input and LLM API call -> Interaction: User inputs job details, LLM generates tailored cover letter. -> Justification: Leverages AI to provide immediate value by automating a common job application task, directly using the resume content.
-        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. 
-    -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F8F7F4; /* Warm off-white */
-            color: #3d405b; /* Dark Slate Blue */
+            background-color: #F8F7F4;
+            color: #3d405b;
         }
         .nav-link {
             transition: color 0.3s;
         }
         .nav-link:hover, .nav-link.active {
-            color: #3A8891; /* Muted Teal */
+            color: #3A8891;
         }
         .timeline-item .details {
             max-height: 0;
@@ -37,7 +27,7 @@
             transition: max-height 0.5s ease-in-out;
         }
         .timeline-item.open .details {
-            max-height: 500px; /* Adjust as needed */
+            max-height: 500px;
         }
         .tag {
             cursor: pointer;
@@ -81,28 +71,67 @@
             text-decoration: none;
             cursor: pointer;
         }
+        /* Foto de perfil */
+        .profile-pic {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 9999px;
+            border: 2px solid #3A8891;
+            background: #fff;
+        }
+        .profile-upload-label {
+            cursor: pointer;
+            color: #3A8891;
+            font-size: 0.85rem;
+            text-decoration: underline;
+        }
+        .profile-upload-label:hover {
+            color: #25636a;
+        }
     </style>
 </head>
 <body class="antialiased">
 
-    <header class="bg-[#F8F7F4]/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+    <header class="bg-[#F8F7F4]/90 backdrop-blur-md sticky top-0 z-50 shadow-md border-b border-[#3A8891]/10">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-xl font-bold text-[#3d405b]">Felipe Izui</div>
+            <div class="flex items-center space-x-4">
+                <img id="profilePic"
+                     src="https://media.licdn.com/dms/image/v2/D4D03AQHEqXD2X0l6Cw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1726879615840?e=1758153600&v=beta&t=oRsFoXZK6ZmJAf7s8NmIgu3b_PN8dKD_zXmAJaV-L9c"
+                     alt="Foto de Perfil do LinkedIn"
+                     class="profile-pic shadow-md">
+                <div>
+                    <div class="text-xl font-bold text-[#3d405b] flex items-center">
+                        Felipe Izui
+                        <a href="https://www.linkedin.com/in/felipe-izui-a86088157" target="_blank" rel="noopener"
+                           class="ml-2 text-[#3A8891] hover:text-[#25636a] flex items-center" title="LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                 viewBox="0 0 24 24" class="inline-block align-middle">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm15.5 11.268h-3v-5.604c0-1.337-.025-3.063-1.868-3.063-1.868 0-2.154 1.459-2.154 2.967v5.7h-3v-10h2.881v1.367h.041c.401-.761 1.379-1.563 2.841-1.563 3.039 0 3.6 2.001 3.6 4.601v5.595z"/>
+                            </svg>
+                            <span class="sr-only">LinkedIn</span>
+                        </a>
+                    </div>
+                    <div class="text-xs text-gray-500">Analista de Business Intelligence</div>
+                </div>
+            </div>
             <div class="hidden md:flex items-center space-x-8">
                 <a href="#sobre" class="nav-link font-medium">Sobre</a>
+                <a href="#projetos" class="nav-link font-medium">Projetos</a>
                 <a href="#experiencia" class="nav-link font-medium">Experiência</a>
                 <a href="#habilidades" class="nav-link font-medium">Habilidades</a>
                 <a href="#educacao" class="nav-link font-medium">Educação</a>
             </div>
             <a href="mailto:seu_email@example.com" class="hidden md:block bg-[#3A8891] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition">Contato</a>
             <div class="md:hidden">
-                 <button id="menu-btn" class="text-[#3d405b] focus:outline-none">
+                <button id="menu-btn" class="text-[#3d405b] focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                 </button>
             </div>
         </nav>
         <div id="mobile-menu" class="hidden md:hidden">
             <a href="#sobre" class="block py-2 px-4 text-sm hover:bg-gray-200">Sobre</a>
+            <a href="#projetos" class="block py-2 px-4 text-sm hover:bg-gray-200">Projetos</a>
             <a href="#experiencia" class="block py-2 px-4 text-sm hover:bg-gray-200">Experiência</a>
             <a href="#habilidades" class="block py-2 px-4 text-sm hover:bg-gray-200">Habilidades</a>
             <a href="#educacao" class="block py-2 px-4 text-sm hover:bg-gray-200">Educação</a>
@@ -111,17 +140,26 @@
     </header>
 
     <main class="container mx-auto px-6 py-8 md:py-16">
-        
         <section id="sobre" class="mb-16 md:mb-24 text-center">
             <div class="max-w-4xl mx-auto">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#3d405b]">Felipe Izui</h1>
-                <h2 class="text-xl md:text-2xl font-medium text-[#3A8891] mb-6">Analista de Business Intelligence | Especialista em Logística | Power BI | Power Automate | Azure Databricks</h2>
+                <h2 class="text-xl md:text-2xl font-medium text-[#3A8891] mb-6">
+                    Analista de Business Intelligence | Especialista em Logística | Power BI | Power Automate | Azure Databricks
+                </h2>
                 <p class="text-base md:text-lg text-gray-700 leading-relaxed mb-8">
-                    Sou um profissional com experiência em Gestão de Projetos, Logística, BI, Power BI, Databricks, Sharepoint, e Power Automate. Como Engenheiro Químico, possuo uma base sólida em gestão de projetos e engenharia. Tenho expertise em liderar projetos de melhoria contínua, utilizando tecnologias de formação técnica e desenvolvimento de aplicativos (low-code/no-code) para otimização de processos e tomada de decisão. Tenho um histórico comprovado de melhoria de processos, redução de custos e aumento da eficiência em ambientes complexos.
+                    Sou formado em Tecnologia em Análise e Desenvolvimento de Sistemas e Engenharia Química, com pós-graduação em Gerenciamento de Projetos. Tenho experiência em Gestão de Projetos, Logística, BI, Power BI, Databricks, SharePoint e Power Automate. Atuo liderando projetos de melhoria contínua, utilizando tecnologias de desenvolvimento de sistemas, automação de processos e análise de dados para otimização operacional e tomada de decisão. Tenho histórico comprovado de entrega de resultados, redução de custos e aumento de eficiência em ambientes complexos.
                 </p>
                 <button id="open-cover-letter-modal" class="bg-[#3A8891] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition font-semibold shadow-md">
                     Gerar Carta de Apresentação ✨
                 </button>
+            </div>
+        </section>
+
+        <!-- NOVA SEÇÃO DE PROJETOS -->
+        <section id="projetos" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-12 text-[#3d405b]">Projetos em Destaque</h2>
+            <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Projetos serão inseridos via JS -->
             </div>
         </section>
 
@@ -143,10 +181,8 @@
                 </div>
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-6 text-[#3d405b]">Certificações</h3>
-                    <div id="cert-tags" class="flex flex-wrap justify-center gap-2 mb-6">
-                    </div>
-                    <ul id="cert-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-4">
-                    </ul>
+                    <div id="cert-tags" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+                    <ul id="cert-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-4"></ul>
                 </div>
             </div>
         </section>
@@ -155,21 +191,44 @@
              <h2 class="text-3xl font-bold text-center mb-12 text-[#3d405b]">Educação</h2>
              <div class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h3 class="text-xl font-semibold text-[#3A8891]">Bacharelado em Engenharia Química</h3>
-                    <p class="text-gray-700">Centro Universitário Facens</p>
-                    <p class="text-sm text-gray-500">02/2020 – 12/2024</p>
+                    <h3 class="text-xl font-semibold text-[#3A8891] flex flex-col items-center gap-2">
+                        <img src="https://www.unigran.br/img/component/logo/logo_azul.svg" alt="Unigran EAD" style="width:90px; height:40px; object-fit:contain; margin-bottom:0.5rem;">
+                        Tecnologia em Análise e Desenvolvimento de Sistemas
+                    </h3>
+                    <p class="text-gray-700">Unigran EAD</p>
+                    <p class="text-sm text-gray-500">Ago 2022 – Dez 2024</p>
+                    <p class="text-xs text-gray-600 mt-2">
+                        O curso é voltado para a análise, documentação e implementação de sistemas computacionais, com foco no mercado de trabalho. Abrange análise, design, implementação de sistemas (ênfase em desenvolvimento web), bancos de dados, redes e segurança da informação. Capacita para atuar no desenvolvimento e manutenção de sistemas computacionais.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2"><strong>Skills:</strong> Organization Skills</p>
                 </div>
-                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h3 class="text-xl font-semibold text-[#3A8891]">Pós-graduação em Gerenciamento de Projetos</h3>
-                    <p class="text-gray-700">Udemy</p>
-                    <p class="text-sm text-gray-500">Concluído em 06/2024</p>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-[#3A8891] flex flex-col items-center gap-2">
+                        <img src="https://facens.br/wp-content/uploads/2021/03/logo-f.png" alt="Facens" style="width:90px; height:40px; object-fit:contain; margin-bottom:0.5rem;">
+                        Engenharia Química
+                    </h3>
+                    <p class="text-gray-700">Centro Universitário Facens</p>
+                    <p class="text-sm text-gray-500">Jan 2015 – Dez 2021</p>
+                    <p class="text-xs text-gray-600 mt-2">Bacharelado em Engenharia Química.</p>
+                    <p class="text-xs text-gray-500 mt-2"><strong>Skills:</strong> Organization Skills</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 md:col-span-2">
+                    <h3 class="text-xl font-semibold text-[#3A8891] flex flex-col items-center gap-2">
+                        <img src="https://www.pucminas.br/Style%20Library/STATIC/img/2025/brasao-pucminas-2025-versao-positiva.png" alt="PUC Minas" style="width:70px; height:70px; object-fit:contain; margin-bottom:0.5rem;">
+                        Pós-graduação em Gerenciamento de Projetos
+                    </h3>
+                    <p class="text-gray-700">PUC Minas</p>
+                    <p class="text-sm text-gray-500">Jun 2024 - Dez 2025 </p>
+                    <p class="text-xs text-gray-600 mt-2">
+                        Pós-graduação com foco em Gestão de Projetos de acordo com os padrões do PMI (PMBOK), abrangendo escopo, integração, stakeholders, estratégia, governança, conformidade, gamificação e gestão aplicada. Ênfase em ferramentas contemporâneas, inovação, multidisciplinaridade e aplicação prática em projetos reais.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2"><strong>Skills:</strong> Organization Skills</p>
                 </div>
              </div>
         </section>
 
     </main>
 
-    <!-- Cover Letter Modal -->
     <div id="coverLetterModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -196,8 +255,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            
+        document.addEventListener('DOMContentLoaded', function () {
             const experienceData = [
                 {
                     role: 'Estagiário de Engenharia',
@@ -229,7 +287,7 @@
                 },
                 {
                     role: 'Visual Basic Application Developer',
-                    company: 'ProtecAuto',
+                    company: 'ProTechAuto - Autônomo',
                     period: '04/2019 – 05/2025',
                     highlight: 'Desenvolvimento de aplicações VBA personalizadas para melhorar operações.',
                     details: [
@@ -241,14 +299,37 @@
                     ]
                 },
                 {
+                    role: 'Estagiário | Faturamento Exportação',
+                    company: 'CNH Industrial',
+                    period: '08/2023 – 03/2024',
+                    highlight: '',
+                    details: []
+                },
+                {
                     role: 'Auxiliar Administrativo | Faturamento Exportação',
-                    company: 'Prosegur',
+                    company: 'CNH Industrial',
                     period: '03/2024 – 05/2025',
                     highlight: 'Suporte administrativo para diversos projetos com foco em exportação.',
                     details: [
                         'Organização de documentos, atendimento telefônico e preparação de relatórios.',
                         'Atendimento a clientes e fornecedores, e coordenação de viagens e reuniões.',
                         'Processamento de faturas, pedidos de compra e relatórios de despesas.'
+                    ]
+                },
+                {
+                    role: 'Controlador de Processos Logísticos | Expediting',
+                    company: 'CNH Industrial',
+                    period: '05/2025 – Present',
+                    highlight: 'Importação de peças entre Intercompanies e controle de processos logísticos.',
+                    details: [
+                        'Atuo na gestão de processos logísticos e relacionamento com fornecedores, com foco em eficiência operacional, cumprimento de prazos e resolução de problemas críticos. Minhas responsabilidades incluem:',
+                        'Monitoramento e atualização de prazos no sistema, além de follow-up constante com fornecedores.',
+                        'Escalonamento de casos críticos e suporte direto na resolução de problemas de embarque, documentação e interface entre áreas.',
+                        'Realização de análises como Fill Rate, criticidade de itens e necessidade de alteração modal.',
+                        'Coordenação e aprovação de processos como reembalagens, emissão de notas de débito e alteração cadastral de fornecedores.',
+                        'Atuação ativa no CSCN com treinamento a fornecedores, resposta a chamados e acompanhamento de tickets.',
+                        'Participação em reuniões com áreas estratégicas (NPPS e GPR), contribuindo com insights para melhorias no fluxo de compras e pedidos.',
+                        'Gestão de indicadores logísticos (assigned, packed, DGR etc.) e aplicação de IAPD para pedidos e compras.'
                     ]
                 }
             ];
@@ -427,6 +508,7 @@
                 jobTitleInput.value = '';
                 companyInput.value = '';
                 loadingIndicator.classList.add('hidden');
+                jobTitleInput.focus(); // Focus first input
             });
 
             closeCoverLetterModalBtn.addEventListener('click', () => {
@@ -435,6 +517,12 @@
 
             window.addEventListener('click', (event) => {
                 if (event.target == coverLetterModal) {
+                    coverLetterModal.style.display = 'none';
+                }
+            });
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && coverLetterModal.style.display === 'flex') {
                     coverLetterModal.style.display = 'none';
                 }
             });
@@ -471,28 +559,29 @@
                 Currículo:
                 ${resumeText}`;
 
+                const apiUrl = "http://localhost:3001/generate-cover-letter"; // Or your deployed backend URL
                 try {
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                    const payload = { contents: chatHistory };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const payload = { prompt }; // Only send the prompt to your backend
                     const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                     const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
+                    if (
+                        result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
+                        result.candidates[0].content.parts.length > 0
+                    ) {
                         const text = result.candidates[0].content.parts[0].text;
                         coverLetterOutput.textContent = text;
                     } else {
                         coverLetterOutput.textContent = 'Não foi possível gerar a carta de apresentação. Tente novamente.';
                     }
                 } catch (error) {
-                    coverLetterOutput.textContent = 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, tente novamente mais tarde.';
+                    coverLetterOutput.textContent = 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, verifique sua chave de API e sua conexão de internet. Detalhes no console.';
                     console.error('Erro ao chamar a API Gemini:', error);
                 } finally {
                     loadingIndicator.classList.add('hidden');
@@ -501,7 +590,13 @@
 
             copyCoverLetterBtn.addEventListener('click', () => {
                 const textToCopy = coverLetterOutput.textContent;
-                if (textToCopy && textToCopy !== 'Sua carta de apresentação aparecerá aqui.' && textToCopy !== 'Não foi possível gerar a carta de apresentação. Tente novamente.' && textToCopy !== 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, tente novamente mais tarde.' && textToCopy !== 'Por favor, preencha o cargo e a empresa.') {
+                if (
+                    textToCopy &&
+                    textToCopy !== 'Sua carta de apresentação aparecerá aqui.' &&
+                    textToCopy !== 'Não foi possível gerar a carta de apresentação. Tente novamente.' &&
+                    textToCopy !== 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, verifique sua chave de API e sua conexão de internet. Detalhes no console.' &&
+                    textToCopy !== 'Por favor, preencha o cargo e a empresa.'
+                ) {
                     const textArea = document.createElement("textarea");
                     textArea.value = textToCopy;
                     document.body.appendChild(textArea);
@@ -517,6 +612,46 @@
                     }
                     document.body.removeChild(textArea);
                 }
+            });
+
+            // Projetos em destaque
+            const projects = [
+                {
+                    title: "Dashboard Logístico Power BI",
+                    description: "Dashboard interativo para monitoramento de KPIs logísticos, integração com SAP e automação de relatórios.",
+                    tech: ["Power BI", "SAP", "Power Automate"],
+                    link: "#",
+                    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80"
+                },
+                {
+                    title: "Automação de Relatórios Financeiros",
+                    description: "Automação de consolidação de dados financeiros usando VBA e integração com Excel avançado.",
+                    tech: ["VBA", "Excel", "Financeiro"],
+                    link: "#",
+                    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80"
+                },
+                {
+                    title: "App de Agendamento Low-Code",
+                    description: "Aplicativo para gestão de agendamentos e pagamentos em barbearia, desenvolvido em plataforma low-code.",
+                    tech: ["Low-code", "Power Apps"],
+                    link: "#",
+                    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
+                }
+            ];
+            const projectsContainer = document.getElementById('projects-container');
+            projects.forEach(proj => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-lg shadow-md border border-gray-200 p-5 flex flex-col hover:shadow-lg transition";
+                card.innerHTML = `
+                    <img src="${proj.image}" alt="${proj.title}" class="rounded-md mb-4 h-40 w-full object-cover">
+                    <h3 class="text-xl font-semibold text-[#3A8891] mb-2">${proj.title}</h3>
+                    <p class="text-gray-700 mb-3">${proj.description}</p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        ${proj.tech.map(t => `<span class="bg-[#3A8891]/10 text-[#3A8891] px-2 py-1 rounded text-xs font-medium">${t}</span>`).join('')}
+                    </div>
+                    <a href="${proj.link}" class="text-sm text-[#3A8891] hover:underline font-semibold mt-auto" target="_blank" rel="noopener">Ver mais</a>
+                `;
+                projectsContainer.appendChild(card);
             });
         });
     </script>
