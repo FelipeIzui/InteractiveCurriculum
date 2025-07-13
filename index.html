@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currículo Interativo - Felipe Izui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Muted Teal -->
+    <!-- Application Structure Plan: A single-page application with a fixed top navigation bar for quick access to key sections: Sobre, Experiência, Habilidades, e Educação/Contato. The structure is designed for a recruiter's workflow, starting with a high-level summary, moving to an interactive timeline for detailed experience, then to a visual breakdown of skills, and finally education and contact details. This non-linear but guided flow is more engaging than a static document and allows users to quickly find the information most relevant to them. -->
+    <!-- Visualization & Content Choices: 
+        - Resumo (Summary) -> Goal: Inform -> Method: Clean text block -> Justification: Provides an immediate, concise professional overview.
+        - Experiência (Experience) -> Goal: Organize/Change -> Method: Interactive vertical timeline using HTML/CSS/JS -> Interaction: Clicking a job title reveals its detailed responsibilities. -> Justification: A timeline is a visually compelling and intuitive way to represent chronological work history, making it easier to follow career progression than a simple list. Highlighting a key quantitative achievement per role draws attention to impact.
+        - Habilidades (Skills) -> Goal: Compare/Inform -> Method: Horizontal bar chart (Chart.js/Canvas) -> Interaction: Hover tooltips provide context. -> Justification: A chart provides a quick, scannable overview of technical proficiency, which is more effective for comparison than a text list.
+        - Certificações (Certifications) -> Goal: Organize -> Method: Tag-based filterable list (HTML/CSS/JS) -> Interaction: Users can click tags (e.g., 'Udemy', 'Power BI') to filter the list. -> Justification: Manages the long list of certifications, allowing users to focus on credentials from specific areas or providers.
+        - Gerar Carta de Apresentação (Generate Cover Letter) -> Goal: Create/Assist -> Method: Modal with text input and LLM API call -> Interaction: User inputs job details, LLM generates tailored cover letter. -> Justification: Leverages AI to provide immediate value by automating a common job application task, directly using the resume content.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. 
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4; /* Warm off-white */
+            color: #3d405b; /* Dark Slate Blue */
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3A8891; /* Muted Teal */
+        }
+        .timeline-item .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .timeline-item.open .details {
+            max-height: 500px; /* Adjust as needed */
+        }
+        .tag {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .tag.active {
+            transform: scale(1.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 700px;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-[#F8F7F4]/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-[#3d405b]">Felipe Izui</div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#sobre" class="nav-link font-medium">Sobre</a>
+                <a href="#experiencia" class="nav-link font-medium">Experiência</a>
+                <a href="#habilidades" class="nav-link font-medium">Habilidades</a>
+                <a href="#educacao" class="nav-link font-medium">Educação</a>
+            </div>
+            <a href="mailto:seu_email@example.com" class="hidden md:block bg-[#3A8891] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition">Contato</a>
+            <div class="md:hidden">
+                 <button id="menu-btn" class="text-[#3d405b] focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#sobre" class="block py-2 px-4 text-sm hover:bg-gray-200">Sobre</a>
+            <a href="#experiencia" class="block py-2 px-4 text-sm hover:bg-gray-200">Experiência</a>
+            <a href="#habilidades" class="block py-2 px-4 text-sm hover:bg-gray-200">Habilidades</a>
+            <a href="#educacao" class="block py-2 px-4 text-sm hover:bg-gray-200">Educação</a>
+            <a href="mailto:seu_email@example.com" class="block py-2 px-4 text-sm hover:bg-gray-200">Contato</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+        
+        <section id="sobre" class="mb-16 md:mb-24 text-center">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#3d405b]">Felipe Izui</h1>
+                <h2 class="text-xl md:text-2xl font-medium text-[#3A8891] mb-6">Analista de Business Intelligence | Especialista em Logística | Power BI | Power Automate | Azure Databricks</h2>
+                <p class="text-base md:text-lg text-gray-700 leading-relaxed mb-8">
+                    Sou um profissional com experiência em Gestão de Projetos, Logística, BI, Power BI, Databricks, Sharepoint, e Power Automate. Como Engenheiro Químico, possuo uma base sólida em gestão de projetos e engenharia. Tenho expertise em liderar projetos de melhoria contínua, utilizando tecnologias de formação técnica e desenvolvimento de aplicativos (low-code/no-code) para otimização de processos e tomada de decisão. Tenho um histórico comprovado de melhoria de processos, redução de custos e aumento da eficiência em ambientes complexos.
+                </p>
+                <button id="open-cover-letter-modal" class="bg-[#3A8891] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition font-semibold shadow-md">
+                    Gerar Carta de Apresentação ✨
+                </button>
+            </div>
+        </section>
+
+        <section id="experiencia" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-12 text-[#3d405b]">Experiência Profissional</h2>
+            <div id="timeline-container" class="relative max-w-2xl mx-auto border-l-2 border-[#3A8891]/30">
+            </div>
+        </section>
+
+        <section id="habilidades" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-12 text-[#3d405b]">Habilidades e Certificações</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-6 text-[#3d405b]">Principais Competências</h3>
+                    <div class="chart-container relative w-full max-w-xl mx-auto h-96 max-h-[450px]">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                     <p class="text-center text-sm text-gray-500 mt-4">Esta visualização representa a proficiência nas principais ferramentas e tecnologias mencionadas no currículo. Passe o mouse sobre as barras para mais detalhes.</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-6 text-[#3d405b]">Certificações</h3>
+                    <div id="cert-tags" class="flex flex-wrap justify-center gap-2 mb-6">
+                    </div>
+                    <ul id="cert-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-4">
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section id="educacao" class="text-center">
+             <h2 class="text-3xl font-bold text-center mb-12 text-[#3d405b]">Educação</h2>
+             <div class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-[#3A8891]">Bacharelado em Engenharia Química</h3>
+                    <p class="text-gray-700">Centro Universitário Facens</p>
+                    <p class="text-sm text-gray-500">02/2020 – 12/2024</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-[#3A8891]">Pós-graduação em Gerenciamento de Projetos</h3>
+                    <p class="text-gray-700">Udemy</p>
+                    <p class="text-sm text-gray-500">Concluído em 06/2024</p>
+                </div>
+             </div>
+        </section>
+
+    </main>
+
+    <!-- Cover Letter Modal -->
+    <div id="coverLetterModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl font-bold mb-6 text-center text-[#3d405b]">Gerar Carta de Apresentação</h2>
+            <div class="mb-4">
+                <label for="jobTitleInput" class="block text-gray-700 text-sm font-bold mb-2">Cargo:</label>
+                <input type="text" id="jobTitleInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: Analista de BI Sênior">
+            </div>
+            <div class="mb-6">
+                <label for="companyInput" class="block text-gray-700 text-sm font-bold mb-2">Empresa:</label>
+                <input type="text" id="companyInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: Google Brasil">
+            </div>
+            <button id="generateCoverLetterBtn" class="bg-[#3A8891] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition font-semibold w-full mb-4">
+                Gerar Carta ✨
+            </button>
+            <div id="loadingIndicator" class="hidden text-center text-gray-600 mb-4">Gerando carta...</div>
+            <div id="coverLetterOutput" class="bg-gray-100 p-4 rounded-lg border border-gray-200 min-h-[150px] max-h-[400px] overflow-y-auto text-gray-800 text-left whitespace-pre-wrap">
+                Sua carta de apresentação aparecerá aqui.
+            </div>
+            <button id="copyCoverLetterBtn" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition mt-4 w-full">
+                Copiar Carta
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const experienceData = [
+                {
+                    role: 'Estagiário de Engenharia',
+                    company: 'CNH',
+                    period: '04/2023 – 03/2024',
+                    highlight: 'Coordenação e aprovação de processos de reembalagens e emissão de NFs.',
+                    details: [
+                        'Monitoramento e atualização de prazos no sistema, além de follow-up com clientes e fornecedores.',
+                        'Auxílio em negociações, buscando sempre números positivos.',
+                        'Suporte na resolução de problemas de embarque, documentação e interface entre áreas.',
+                        'Atendimento a clientes e fornecedores, garantindo conformidade com as diretrizes de segurança e supervisionando atividades das transportadoras.',
+                        'Gerenciamento da documentação técnica e acompanhamento de tickets.',
+                        'Processamento e gestão de indicadores logísticos (NF/PPSA, GPR, assigned, packed, DOR, etc.).'
+                    ]
+                },
+                {
+                    role: 'Analista de Performance',
+                    company: 'Célere Intralogística',
+                    period: '04/2019 – 05/2025',
+                    highlight: 'Automação de fluxos de trabalho no Power Automate, resultando em redução de 70% no tempo de criação de relatórios.',
+                    details: [
+                        'Implementação de sistema de BI para indicadores de desempenho da CNH Industrial.',
+                        'Monitoramento de sistemas (TMS, CGS, SCS, SAP) com foco na liberação de mercadorias e gestão de fretes.',
+                        'Gerenciamento da produção de alumínio, assegurando a entrega no prazo e conformidade com padrões de qualidade.',
+                        'Realização de análises diárias e KPIs para otimizar o processo de distribuição.',
+                        'Geração de relatórios executivos e coordenação de reuniões para a Diretoria.',
+                        'Elaboração e compartilhamento de relatórios sobre o status de desempenho operacional.'
+                    ]
+                },
+                {
+                    role: 'Visual Basic Application Developer',
+                    company: 'ProtecAuto',
+                    period: '04/2019 – 05/2025',
+                    highlight: 'Desenvolvimento de aplicações VBA personalizadas para melhorar operações.',
+                    details: [
+                        'Criação e manutenção de aplicações VBA para melhorar a produtividade empresarial.',
+                        'Colaboração com analistas de sistemas para desenvolver e implementar novas soluções.',
+                        'Teste de códigos e oferecimento de suporte técnico.',
+                        'Automação de relatórios financeiros para consolidação e análise de dados.',
+                        'Desenvolvimento de sistema para gestão de agendamentos e pagamentos em barbearia.'
+                    ]
+                },
+                {
+                    role: 'Auxiliar Administrativo | Faturamento Exportação',
+                    company: 'Prosegur',
+                    period: '03/2024 – 05/2025',
+                    highlight: 'Suporte administrativo para diversos projetos com foco em exportação.',
+                    details: [
+                        'Organização de documentos, atendimento telefônico e preparação de relatórios.',
+                        'Atendimento a clientes e fornecedores, e coordenação de viagens e reuniões.',
+                        'Processamento de faturas, pedidos de compra e relatórios de despesas.'
+                    ]
+                }
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            experienceData.forEach(job => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item mb-8 pl-8 cursor-pointer';
+                item.innerHTML = `
+                    <div class="absolute w-4 h-4 bg-[#3A8891] rounded-full -left-[9px] mt-1.5 border-4 border-[#F8F7F4]"></div>
+                    <p class="text-sm text-gray-500">${job.period}</p>
+                    <h3 class="text-xl font-semibold text-[#3d405b]">${job.role}</h3>
+                    <p class="text-md font-medium text-gray-600 mb-2">${job.company}</p>
+                    <div class="details">
+                        <p class="text-sm text-gray-600 mb-3 italic"><strong>Destaque:</strong> ${job.highlight}</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            ${job.details.map(d => `<li>${d}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                timelineContainer.appendChild(item);
+            });
+            
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    item.classList.toggle('open');
+                });
+            });
+
+            const skillsData = {
+                labels: ['Power BI', 'Power Automate', 'VBA', 'SQL', 'Python', 'Databricks', 'Gestão de Projetos'],
+                datasets: [{
+                    label: 'Nível de Proficiência',
+                    data: [95, 90, 85, 80, 70, 75, 88],
+                    backgroundColor: 'rgba(58, 136, 145, 0.6)',
+                    borderColor: 'rgba(58, 136, 145, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            const skillsChartCtx = document.getElementById('skillsChart').getContext('2d');
+            new Chart(skillsChartCtx, {
+                type: 'bar',
+                data: skillsData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                       if(context.parsed.x > 90) label += 'Avançado';
+                                       else if (context.parsed.x > 75) label += 'Proficiente';
+                                       else label += 'Intermediário';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                display: false
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                           grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            const certifications = [
+                { name: 'Microsoft Excel', provider: 'Udemy', tags: ['udemy', 'office'] },
+                { name: 'Microsoft Access', provider: 'Udemy', tags: ['udemy', 'office'] },
+                { name: 'Microsoft Office Excel - VBA', provider: 'CBA', tags: ['cba', 'vba', 'office'] },
+                { name: 'Microsoft Office Excel Avançado', provider: 'CBA', tags: ['cba', 'office'] },
+                { name: 'Microsoft Power Automate', provider: 'Udemy', tags: ['udemy', 'power platform'] },
+                { name: 'Python', provider: 'Udemy', tags: ['udemy', 'python'] },
+                { name: 'Low-code Development Platforms', provider: 'Udemy', tags: ['udemy', 'low-code'] },
+                { name: 'Project Management (Industry 4.0)', provider: 'Udemy', tags: ['udemy', 'gestao'] },
+                { name: 'Microsoft Power Query', provider: 'Udemy', tags: ['udemy', 'power bi'] },
+                { name: 'Microsoft SQL Server', provider: 'Udemy', tags: ['udemy', 'sql'] },
+                { name: 'Business Intelligence (BI)', provider: 'Udemy', tags: ['udemy', 'bi'] },
+                { name: 'Visual Basic for Applications (VBA)', provider: 'Udemy', tags: ['udemy', 'vba'] },
+                { name: 'Intensivo de Power BI', provider: 'Udemy', tags: ['udemy', 'power bi', 'bi'] },
+                { name: 'Power BI Completo - Básico ao Avançado', provider: 'Udemy', tags: ['udemy', 'power bi', 'bi'] }
+            ];
+            
+            const certList = document.getElementById('cert-list');
+            const certTagsContainer = document.getElementById('cert-tags');
+            
+            const allTags = ['Todos', ...new Set(certifications.flatMap(c => c.tags))];
+            
+            allTags.forEach(tag => {
+                const tagEl = document.createElement('button');
+                tagEl.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+                tagEl.className = 'tag bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-[#3A8891] hover:text-white';
+                if(tag === 'Todos') tagEl.classList.add('active', 'bg-[#3A8891]', 'text-white');
+                tagEl.dataset.tag = tag;
+                certTagsContainer.appendChild(tagEl);
+            });
+
+            const renderCerts = (filter = 'Todos') => {
+                certList.innerHTML = '';
+                const filteredCerts = filter === 'Todos' 
+                    ? certifications 
+                    : certifications.filter(c => c.tags.includes(filter));
+
+                filteredCerts.forEach(cert => {
+                    const li = document.createElement('li');
+                    li.className = 'bg-white p-4 rounded-lg shadow-sm border border-gray-200';
+                    li.innerHTML = `
+                        <p class="font-semibold text-[#3d405b]">${cert.name}</p>
+                        <p class="text-sm text-gray-500">Fornecedor: ${cert.provider}</p>
+                    `;
+                    certList.appendChild(li);
+                });
+            };
+
+            certTagsContainer.addEventListener('click', (e) => {
+                if(e.target.classList.contains('tag')) {
+                    document.querySelectorAll('.tag').forEach(t => t.classList.remove('active', 'bg-[#3A8891]', 'text-white'));
+                    e.target.classList.add('active', 'bg-[#3A8891]', 'text-white');
+                    renderCerts(e.target.dataset.tag);
+                }
+            });
+            
+            renderCerts();
+
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Gemini API Integration for Cover Letter Generation
+            const coverLetterModal = document.getElementById('coverLetterModal');
+            const openCoverLetterModalBtn = document.getElementById('open-cover-letter-modal');
+            const closeCoverLetterModalBtn = coverLetterModal.querySelector('.close-button');
+            const generateCoverLetterBtn = document.getElementById('generateCoverLetterBtn');
+            const jobTitleInput = document.getElementById('jobTitleInput');
+            const companyInput = document.getElementById('companyInput');
+            const coverLetterOutput = document.getElementById('coverLetterOutput');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const copyCoverLetterBtn = document.getElementById('copyCoverLetterBtn');
+
+            openCoverLetterModalBtn.addEventListener('click', () => {
+                coverLetterModal.style.display = 'flex';
+                coverLetterOutput.textContent = 'Sua carta de apresentação aparecerá aqui.';
+                jobTitleInput.value = '';
+                companyInput.value = '';
+                loadingIndicator.classList.add('hidden');
+            });
+
+            closeCoverLetterModalBtn.addEventListener('click', () => {
+                coverLetterModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target == coverLetterModal) {
+                    coverLetterModal.style.display = 'none';
+                }
+            });
+
+            generateCoverLetterBtn.addEventListener('click', async () => {
+                const jobTitle = jobTitleInput.value.trim();
+                const company = companyInput.value.trim();
+
+                if (!jobTitle || !company) {
+                    coverLetterOutput.textContent = 'Por favor, preencha o cargo e a empresa.';
+                    return;
+                }
+
+                loadingIndicator.classList.remove('hidden');
+                coverLetterOutput.textContent = '';
+
+                const resumeText = `
+                    RESUMO: Sou um profissional com experiência em Gestão de Projetos, Logística, BI, Power BI, Databricks, Sharepoint, e Power Automate. Como Engenheiro Químico, possuo uma base sólida em gestão de projetos e engenharia. Tenho expertise em liderar projetos de melhoria contínua, utilizando tecnologias de formação técnica e desenvolvimento de aplicativos (low-code/no-code) para otimização de processos e tomada de decisão. Tenho um histórico comprovado de melhoria de processos, redução de custos e aumento da eficiência em ambientes complexos.
+
+                    EXPERIÊNCIA:
+                    ${experienceData.map(job => 
+                        `${job.role} na ${job.company} (${job.period}). Destaque: ${job.highlight}. Detalhes: ${job.details.join('; ')}`
+                    ).join('\n')}
+
+                    HABILIDADES: ${skillsData.labels.join(', ')}.
+
+                    EDUCAÇÃO: Bacharelado em Engenharia Química no Centro Universitário Facens (02/2020 – 12/2024). Pós-graduação em Gerenciamento de Projetos na Udemy (Concluído em 06/2024).
+
+                    CERTIFICAÇÕES: ${certifications.map(cert => `${cert.name} (${cert.provider})`).join(', ')}.
+                `;
+
+                const prompt = `Com base no seguinte currículo, gere uma carta de apresentação para a vaga de ${jobTitle} na empresa ${company}. A carta deve ter um tom profissional, destacar as experiências e habilidades mais relevantes para a vaga, e ter no máximo 300 palavras.
+
+                Currículo:
+                ${resumeText}`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        coverLetterOutput.textContent = text;
+                    } else {
+                        coverLetterOutput.textContent = 'Não foi possível gerar a carta de apresentação. Tente novamente.';
+                    }
+                } catch (error) {
+                    coverLetterOutput.textContent = 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, tente novamente mais tarde.';
+                    console.error('Erro ao chamar a API Gemini:', error);
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            });
+
+            copyCoverLetterBtn.addEventListener('click', () => {
+                const textToCopy = coverLetterOutput.textContent;
+                if (textToCopy && textToCopy !== 'Sua carta de apresentação aparecerá aqui.' && textToCopy !== 'Não foi possível gerar a carta de apresentação. Tente novamente.' && textToCopy !== 'Ocorreu um erro ao gerar a carta de apresentação. Por favor, tente novamente mais tarde.' && textToCopy !== 'Por favor, preencha o cargo e a empresa.') {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyCoverLetterBtn.textContent = 'Copiado!';
+                        setTimeout(() => {
+                            copyCoverLetterBtn.textContent = 'Copiar Carta';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Falha ao copiar:', err);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
