@@ -122,6 +122,7 @@
                 <a href="#experiencia" class="nav-link font-medium">Experiência</a>
                 <a href="#habilidades" class="nav-link font-medium">Habilidades</a>
                 <a href="#educacao" class="nav-link font-medium">Educação</a>
+                <a href="#diario" class="nav-link font-medium">Diário</a>
             </div>
             <a href="mailto:felipegustavoizui@gmail.com" class="hidden md:block bg-[#3A8891] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition">Contato</a>
             <div class="md:hidden">
@@ -227,6 +228,44 @@
                 </div>
              </div>
         </section>
+                    <!-- SEÇÃO DE DIÁRIO PESSOAL -->
+<section id="diario" class="hidden mb-24">
+  <h2 class="text-3xl font-bold text-center mb-8 text-[#3d405b]">Diário Pessoal</h2>
+
+  <!-- Tela de senha -->
+  <div id="password-section" class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md text-center">
+    <p class="text-gray-700 mb-4">Esta seção é privada. Digite a senha para acessar:</p>
+    <input type="password" id="diario-password" placeholder="Senha" class="border rounded px-3 py-2 w-full mb-4 text-center focus:outline-none focus:ring-2 focus:ring-[#3A8891]" />
+    <button id="check-password" class="bg-[#3A8891] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition w-full">Entrar</button>
+    <p id="wrong-pass" class="text-red-500 text-sm mt-3 hidden">Senha incorreta. Tente novamente.</p>
+  </div>
+
+  <!-- Conteúdo do diário -->
+  <div id="diario-content" class="hidden">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md mt-8">
+      <div class="flex justify-between items-center mb-4">
+        <input type="date" id="date-picker" class="border rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3A8891]" />
+        <button id="new-entry-btn" class="bg-[#3A8891] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition">Novo Registro</button>
+      </div>
+      <h3 id="diario-title" class="text-2xl font-semibold text-[#3A8891] mb-4 text-center"></h3>
+      <p id="diario-text" class="text-gray-700 whitespace-pre-line leading-relaxed"></p>
+      <p id="no-entry" class="text-gray-500 italic text-center mt-6 hidden">Nenhum registro encontrado para esta data.</p>
+    </div>
+  </div>
+
+  <!-- Modal de novo registro -->
+  <div id="new-entry-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+      <button id="close-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
+      <h3 class="text-xl font-semibold text-[#3A8891] mb-4 text-center">Novo Registro</h3>
+      <label class="block text-gray-700 mb-2">Data:</label>
+      <input type="date" id="new-entry-date" class="border rounded px-3 py-2 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-[#3A8891]" />
+      <label class="block text-gray-700 mb-2">Conteúdo:</label>
+      <textarea id="new-entry-text" rows="8" class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3A8891]" placeholder="Escreva aqui..."></textarea>
+      <button id="save-entry-btn" class="bg-[#3A8891] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition w-full mt-4">Salvar e Baixar JSON</button>
+    </div>
+  </div>
+</section>
 
     </main>
 
@@ -656,6 +695,115 @@
             });
         });
     </script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const diarioLink = document.querySelector('a[href="#diario"]');
+    const diarioSection = document.getElementById('diario');
+    const passwordSection = document.getElementById('password-section');
+    const diarioContent = document.getElementById('diario-content');
+    const checkPasswordBtn = document.getElementById('check-password');
+    const wrongPass = document.getElementById('wrong-pass');
+    const datePicker = document.getElementById('date-picker');
+    const diarioTitle = document.getElementById('diario-title');
+    const diarioText = document.getElementById('diario-text');
+    const noEntry = document.getElementById('no-entry');
+    const PASSWORD = 'izui';
+    const newEntryBtn = document.getElementById('new-entry-btn');
+    const newEntryModal = document.getElementById('new-entry-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const newEntryDate = document.getElementById('new-entry-date');
+    const newEntryText = document.getElementById('new-entry-text');
+    const saveEntryBtn = document.getElementById('save-entry-btn');
+
+    let diarioData = {};
+
+    diarioLink.addEventListener('click', () => {
+      document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
+      diarioSection.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    checkPasswordBtn.addEventListener('click', () => {
+      const entered = document.getElementById('diario-password').value;
+      if (entered === PASSWORD) {
+        passwordSection.classList.add('hidden');
+        diarioContent.classList.remove('hidden');
+        loadDiarioData();
+      } else {
+        wrongPass.classList.remove('hidden');
+      }
+    });
+
+    async function loadDiarioData() {
+      try {
+        const response = await fetch('diario.json');
+        diarioData = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.value = today;
+        renderEntry(today);
+      } catch (error) {
+        diarioText.textContent = 'Erro ao carregar o diário.';
+      }
+    }
+
+    function renderEntry(date) {
+      if (diarioData[date]) {
+        const entry = diarioData[date];
+        diarioTitle.textContent = entry.titulo;
+        diarioText.textContent = entry.conteudo;
+        diarioTitle.classList.remove('hidden');
+        diarioText.classList.remove('hidden');
+        noEntry.classList.add('hidden');
+      } else {
+        diarioTitle.textContent = '';
+        diarioText.textContent = '';
+        noEntry.classList.remove('hidden');
+      }
+    }
+
+    datePicker.addEventListener('change', e => {
+      renderEntry(e.target.value);
+    });
+
+    // Novo registro
+    newEntryBtn.addEventListener('click', () => {
+      newEntryModal.classList.remove('hidden');
+      newEntryDate.value = new Date().toISOString().split('T')[0];
+      newEntryText.value = '';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      newEntryModal.classList.add('hidden');
+    });
+
+    saveEntryBtn.addEventListener('click', () => {
+      const date = newEntryDate.value;
+      const text = newEntryText.value.trim();
+      if (!date || !text) {
+        alert('Preencha a data e o texto.');
+        return;
+      }
+
+      const tituloFormatado = new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      diarioData[date] = { titulo: tituloFormatado, conteudo: text };
+
+      const blob = new Blob([JSON.stringify(diarioData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'diario.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      newEntryModal.classList.add('hidden');
+      alert('Novo registro adicionado! O arquivo diario.json foi baixado — substitua o antigo no servidor.');
+    });
+  });
+</script>
+
+
 </body>
 </html>
 </html>
