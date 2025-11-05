@@ -696,113 +696,151 @@
         });
     </script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const diarioLink = document.querySelector('a[href="#diario"]');
-    const diarioSection = document.getElementById('diario');
-    const passwordSection = document.getElementById('password-section');
-    const diarioContent = document.getElementById('diario-content');
-    const checkPasswordBtn = document.getElementById('check-password');
-    const wrongPass = document.getElementById('wrong-pass');
-    const datePicker = document.getElementById('date-picker');
-    const diarioTitle = document.getElementById('diario-title');
-    const diarioText = document.getElementById('diario-text');
-    const noEntry = document.getElementById('no-entry');
-    const PASSWORD = 'izui';
-    const newEntryBtn = document.getElementById('new-entry-btn');
-    const newEntryModal = document.getElementById('new-entry-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const newEntryDate = document.getElementById('new-entry-date');
-    const newEntryText = document.getElementById('new-entry-text');
-    const saveEntryBtn = document.getElementById('save-entry-btn');
+document.addEventListener('DOMContentLoaded', () => {
+  const diarioLink = document.querySelector('a[href="#diario"]');
+  const diarioSection = document.getElementById('diario');
+  const passwordSection = document.getElementById('password-section');
+  const diarioContent = document.getElementById('diario-content');
+  const checkPasswordBtn = document.getElementById('check-password');
+  const wrongPass = document.getElementById('wrong-pass');
+  const diarioTitle = document.getElementById('diario-title');
+  const diarioText = document.getElementById('diario-text');
+  const noEntry = document.getElementById('no-entry');
+  const PASSWORD = 'izui';
+  const newEntryBtn = document.getElementById('new-entry-btn');
+  const newEntryModal = document.getElementById('new-entry-modal');
+  const closeModalBtn = document.getElementById('close-modal');
+  const newEntryDate = document.getElementById('new-entry-date');
+  const newEntryText = document.getElementById('new-entry-text');
+  const saveEntryBtn = document.getElementById('save-entry-btn');
+  
+  let diarioData = {};
 
-    let diarioData = {};
-
-    diarioLink.addEventListener('click', () => {
-      document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
-      diarioSection.classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    checkPasswordBtn.addEventListener('click', () => {
-      const entered = document.getElementById('diario-password').value;
-      if (entered === PASSWORD) {
-        passwordSection.classList.add('hidden');
-        diarioContent.classList.remove('hidden');
-        loadDiarioData();
-      } else {
-        wrongPass.classList.remove('hidden');
-      }
-    });
-
-    async function loadDiarioData() {
-      try {
-        const response = await fetch('diario.json');
-        diarioData = await response.json();
-        const today = new Date().toISOString().split('T')[0];
-        datePicker.value = today;
-        renderEntry(today);
-      } catch (error) {
-        diarioText.textContent = 'Erro ao carregar o diário.';
-      }
-    }
-
-    function renderEntry(date) {
-      if (diarioData[date]) {
-        const entry = diarioData[date];
-        diarioTitle.textContent = entry.titulo;
-        diarioText.textContent = entry.conteudo;
-        diarioTitle.classList.remove('hidden');
-        diarioText.classList.remove('hidden');
-        noEntry.classList.add('hidden');
-      } else {
-        diarioTitle.textContent = '';
-        diarioText.textContent = '';
-        noEntry.classList.remove('hidden');
-      }
-    }
-
-    datePicker.addEventListener('change', e => {
-      renderEntry(e.target.value);
-    });
-
-    // Novo registro
-    newEntryBtn.addEventListener('click', () => {
-      newEntryModal.classList.remove('hidden');
-      newEntryDate.value = new Date().toISOString().split('T')[0];
-      newEntryText.value = '';
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-      newEntryModal.classList.add('hidden');
-    });
-
-    saveEntryBtn.addEventListener('click', () => {
-      const date = newEntryDate.value;
-      const text = newEntryText.value.trim();
-      if (!date || !text) {
-        alert('Preencha a data e o texto.');
-        return;
-      }
-
-      const tituloFormatado = new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-      diarioData[date] = { titulo: tituloFormatado, conteudo: text };
-
-      const blob = new Blob([JSON.stringify(diarioData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'diario.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      newEntryModal.classList.add('hidden');
-      alert('Novo registro adicionado! O arquivo diario.json foi baixado — substitua o antigo no servidor.');
-    });
+  diarioLink.addEventListener('click', () => {
+    document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
+    diarioSection.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-</script>
 
+  checkPasswordBtn.addEventListener('click', () => {
+    const entered = document.getElementById('diario-password').value;
+    if (entered === PASSWORD) {
+      passwordSection.classList.add('hidden');
+      diarioContent.classList.remove('hidden');
+      loadDiarioData();
+    } else {
+      wrongPass.classList.remove('hidden');
+    }
+  });
+
+  async function loadDiarioData() {
+    try {
+      const response = await fetch('diario.json');
+      diarioData = await response.json();
+      renderCalendar();
+    } catch (error) {
+      diarioText.textContent = 'Erro ao carregar o diário.';
+    }
+  }
+
+  function renderCalendar() {
+    const calendarContainer = document.createElement('div');
+    calendarContainer.className = 'grid grid-cols-7 gap-1 text-center mb-6 text-sm';
+    const today = new Date();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    
+    calendarContainer.innerHTML = '<div class="col-span-7 font-semibold mb-2 text-[#3A8891]">' + 
+      today.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }) + '</div>';
+    
+    const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    weekDays.forEach(d => {
+      const el = document.createElement('div');
+      el.textContent = d;
+      el.className = 'font-semibold text-gray-600';
+      calendarContainer.appendChild(el);
+    });
+    
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      calendarContainer.appendChild(empty);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const cell = document.createElement('div');
+      cell.textContent = day;
+      cell.className = 'cursor-pointer py-2 rounded-lg hover:bg-[#3A8891]/10 transition';
+      
+      if (diarioData[dateStr]) {
+        cell.classList.add('bg-[#3A8891]/20', 'font-bold', 'text-[#3A8891]');
+      } else {
+        cell.classList.add('text-gray-600');
+      }
+
+      cell.addEventListener('click', () => renderEntry(dateStr));
+      calendarContainer.appendChild(cell);
+    }
+    
+    diarioContent.prepend(calendarContainer);
+  }
+
+  function renderEntry(date) {
+    if (diarioData[date]) {
+      const entry = diarioData[date];
+      diarioTitle.innerHTML = `<div class="text-lg text-gray-500 mb-1">${entry.titulo}</div>
+      ${entry.subtitulo ? `<div class='text-xl font-bold text-[#3A8891] mb-4'>${entry.subtitulo}</div>` : ''}`;
+      diarioText.textContent = entry.conteudo;
+      diarioTitle.classList.remove('hidden');
+      diarioText.classList.remove('hidden');
+      noEntry.classList.add('hidden');
+    } else {
+      diarioTitle.textContent = '';
+      diarioText.textContent = '';
+      noEntry.classList.remove('hidden');
+    }
+  }
+
+  // Novo registro
+  newEntryBtn.addEventListener('click', () => {
+    newEntryModal.classList.remove('hidden');
+    newEntryDate.value = new Date().toISOString().split('T')[0];
+    newEntryText.value = '';
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    newEntryModal.classList.add('hidden');
+  });
+
+  saveEntryBtn.addEventListener('click', () => {
+    const date = newEntryDate.value;
+    const text = newEntryText.value.trim();
+    if (!date || !text) {
+      alert('Preencha a data e o texto.');
+      return;
+    }
+
+    const tituloFormatado = new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    diarioData[date] = { titulo: tituloFormatado, subtitulo: 'Novo Registro', conteudo: text };
+
+    const blob = new Blob([JSON.stringify(diarioData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diario.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    newEntryModal.classList.add('hidden');
+    alert('Novo registro adicionado! O arquivo diario.json foi baixado — substitua o antigo no servidor.');
+  });
+});
+</script>
 
 </body>
 </html>
