@@ -733,15 +733,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  async function loadDiarioData() {
+    async function loadDiarioData() {
     try {
-      const response = await fetch('diario.json');
-      diarioData = await response.json();
-      renderCalendar();
+        const response = await fetch('https://raw.githubusercontent.com/seu-usuario/seu-repositorio/main/diario.json');
+        diarioData = await response.json();
+        renderCalendar();
     } catch (error) {
-      diarioText.textContent = 'Erro ao carregar o diário.';
+        diarioText.textContent = 'Erro ao carregar o diário.';
     }
-  }
+    }
+
 
   function renderCalendar() {
     const calendarContainer = document.createElement('div');
